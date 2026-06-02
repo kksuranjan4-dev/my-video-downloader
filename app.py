@@ -16,22 +16,26 @@ def get_video():
     if not url:
         return jsonify({'error': 'කරුණාකර ලින්ක් එකක් ඇතුලත් කරන්න'}), 400
 
+    # yt-dlp සඳහා සැකසුම් (YouTube App එකක් ලෙස හැසිරීමට සකසා ඇත)
     ydl_opts = {
         'format': 'best',
         'quiet': True,
         'no_warnings': True,
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'ios']  # මෙන්න මේකෙන් බ්ලොක් එක පනිනවා
+            }
+        },
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'User-Agent': 'com.google.android.youtube/19.10.37 (Linux; U; Android 11; Galaxy S21)',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.9',
         }
     }
 
-    # නිවැරදිම absolute path එක ලබා ගැනීම
     base_dir = os.path.dirname(os.path.abspath(__file__))
     cookie_path = os.path.join(base_dir, 'cookies.txt')
 
-    # Cookies ෆයිල් එක තියෙනවාද කියා සර්වර් ලොග්ස් වල පෙන්වීමට
     if os.path.exists(cookie_path):
         print("🟢 COOKIES FILE FOUND AND LOADED SUCCESS!")
         ydl_opts['cookiefile'] = cookie_path
