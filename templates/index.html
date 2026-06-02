@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Downloader</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f9; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); display: inline-block; width: 80%; max-width: 500px; }
+        input[type="text"] { width: 80%; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px; }
+        .main-btn { padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        .main-btn:hover { background-color: #218838; }
+        #result { margin-top: 20px; }
+        .video-player { width: 100%; border-radius: 8px; margin-top: 15px; background: #000; }
+        
+        /* අලුත් Download බට්න් එකේ ඩිසයින් එක */
+        .dl-btn { display: inline-block; margin-top: 15px; padding: 12px 25px; background-color: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; border: none; cursor: pointer; }
+        .dl-btn:hover { background-color: #c0392b; }
+        .loading { color: #ff9800; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Universal Video Downloader</h2>
+        <p>YouTube, Facebook, TikTok වැනි ඕනෑම ලින්ක් එකක් මෙතන දාන්න</p>
+        
+        <input type="text" id="videoUrl" placeholder="Video Link එක මෙතන පේස්ට් කරන්න...">
+        <br>
+        <button class="main-btn" onclick="getVideo()">ලින්ක් එක ගන්න</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function getVideo() {
+            const urlInput = document.getElementById('videoUrl').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!urlInput) {
+                alert("ලින්ක් එකක් දාලා ඉන්න!");
+                return;
+            }
+
+            resultDiv.innerHTML = '<p class="loading">වීඩියෝ එක හොයනවා... පොඩ්ඩක් ඉන්න ⏳</p>';
+
+            try {
+                const response = await fetch('/api/get-video', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: urlInput })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <h3>${data.title}</h3>
+                        <video controls class="video-player">
+                            <source src="${data.download_url}" type="video/mp4">
+                        </video>
+                        <br>
+                        <button class="dl-btn" onclick="downloadVideo('${data.download_url}', '${data.title}')">⬇️ කෙලින්ම Download කරන්න</button>
+                        
+                        <p style="font-size: 13px; color: #666; margin-top: 15px;">
+                            💡 බට්න් එක ඔබලා ඩවුන්ලෝඩ් වෙන්නේ නැතුව අලුත් ටැබ් එකක වීඩියෝ එක ප්ලේ වුණොත්, කීබෝඩ් එකේ <b>Ctrl + S</b> ඔබන්න. එතකොට නිකන්ම සේව් වෙනවා.
+                        </p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p style="color:red;">අවුලක් වුණා: ${data.error}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color:red;">සර්වර් එකට කනෙක්ට් වෙන්න බැහැ!</p>`;
+            }
+        }
+
+        // කෙලින්ම ඩවුන්ලෝඩ් වෙන්න හදපු ෆන්ක්ෂන් එක
+        function downloadVideo(url, title) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = title + '.mp4'; // ෆයිල් එකේ නම
+            a.target = '_blank';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+
+</body>
+</html>
